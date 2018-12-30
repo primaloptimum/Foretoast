@@ -240,7 +240,7 @@ def ExtractTXT(binary):
             extraction.write(binary[:FootIndex+1])
             extraction.close()
             Data[4]+=1
-            return binary
+            return
 
         binary=file.read(Chunk.Chunk)
 
