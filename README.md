@@ -1,5 +1,7 @@
 #Foretoast
 
+files recovered [PNG,PDF,TXT,GIF,JPG,ZIP]
+
 To install foretoast
 
 chmod +x install.sh
