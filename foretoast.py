@@ -40,6 +40,7 @@ class Chunk(object):
 NumberOfTypes=6
 #Declaring a counter for each type
 Data=[0 for i in range(NumberOfTypes)]
+#in order [JPG,PDF,GIF,ZIP,TXT,PNG]
 StackOfHeaders=[]
 
 
@@ -50,7 +51,7 @@ def Extraction(file, type, NextHeader):#calls the exraction functions depending 
     if type > len(ExtractFunctions) or type < -1:
         print("Unsupported type")
         return file
-    
+
     return ExtractFunctions[type](file,NextHeader)
 
 def ExtractJPG(binary,NextHeader):
@@ -81,16 +82,16 @@ def ExtractJPG(binary,NextHeader):
             extraction.write(binary[0:FootIndex+1])
             extraction.close()
             Data[0]+=1
-            return binary
+            return
 
         binary=file.read(Chunk.Chunk)
-        if(file.tell()>=NextHeader):
+        if(file.tell()>NextHeader):
             extraction.close()
             os.remove(Directory+"/JPG/bla"+ str(Data[0]) +".jpg")
             Data[0]-=1
             file.seek(NextHeader)
-            break
-        
+            return
+
 def ExtractPDF(binary,NextHeader):
     if os.path.exists(Directory+"/PDF")==False:
         os.makedirs(Directory+"/PDF")
@@ -116,7 +117,7 @@ def ExtractPDF(binary,NextHeader):
             extraction.write(binary[:FootIndex+1])
             extraction.close()
             Data[1]+=1
-            return binary
+            return
 
         binary=file.read(Chunk.Chunk)
         if(file.tell()>=NextHeader):
@@ -124,7 +125,7 @@ def ExtractPDF(binary,NextHeader):
             os.remove(Directory+"/PDF/bla"+ str(Data[1])+".pdf")
             Data[1]-=1
             file.seek(NextHeader)
-            break
+            return
 
 def ExtractGIF(binary,NextHeader):
     if os.path.exists(Directory+"/GIF")==False:
@@ -156,7 +157,7 @@ def ExtractGIF(binary,NextHeader):
             extraction.write(binary[:FootIndex+1])
             extraction.close()
             Data[2]+=1
-            return binary
+            return
 
         binary=file.read(Chunk.Chunk)
         if(file.tell()>=NextHeader):
@@ -164,7 +165,7 @@ def ExtractGIF(binary,NextHeader):
             os.remove(Directory+"/GIF/bla"+ str(Data[2]) +".gif")
             Data[2]-=1
             file.seek(NextHeader)
-            break
+            return
 
 def ExtractZIP(binary,NextHeader):
     if os.path.exists(Directory+"/ZIP")==False:
@@ -176,17 +177,17 @@ def ExtractZIP(binary,NextHeader):
     while FootIndex==-1:
         size=len(binary)
         if FootIndex==-1:
-            
+
             counter=0
             ZeroPadding=True
-            
+
             for b in range(4095, 0, -1):
                 if counter==20 and ZeroPadding==False:
                     break
                 if binary[b]==0:
                     continue
                 elif binary[b]==6 and binary[b-1]==5 and binary[b-2]==75 and binary[b-3]==80:
-                    FootIndex=b   
+                    FootIndex=b
 
                 counter+=1
                 ZeroPadding=False
@@ -198,7 +199,7 @@ def ExtractZIP(binary,NextHeader):
             extraction.write(binary)
             extraction.close()
             Data[3]+=1
-            return binary
+            return
 
         binary=file.read(Chunk.Chunk)
         if(file.tell()>=NextHeader):
@@ -206,7 +207,7 @@ def ExtractZIP(binary,NextHeader):
             os.remove(Directory+"/ZIP/bla"+ str(Data[3]) +".zip")
             Data[3]-=1
             file.seek(NextHeader)
-            break
+            return
 
 def ExtractTXT(binary):
     if os.path.exists(Directory+"/TXT")==False:
@@ -266,16 +267,17 @@ def ExtractPNG(binary,NextHeader):
         else:
             extraction.write(binary[:FootIndex+1])
             extraction.close()
-            Data[1]+=1
-            return binary
+            Data[5]+=1
+            file.seek(NextHeader)
+            return
 
-        binary=file.read(Chunk.Chunk)
         if(file.tell()>=NextHeader):
             extraction.close()
             os.remove(Directory+"/PNG/bla"+ str(Data[5]) +".png")
             Data[5]-=1
             file.seek(NextHeader)
-            break
+            return
+        binary=file.read(Chunk.Chunk)
 
 
 
@@ -284,9 +286,9 @@ def ExtractPNG(binary,NextHeader):
 
 def HeaderSearch(binary):
     TXT=False
-    if binary[0]==37 and binary[1]==80 and binary[2]==68:#PDF    
-        StackOfHeaders.append((0,file.tell()-4096)) 
-    
+    if binary[0]==37 and binary[1]==80 and binary[2]==68:#PDF
+        StackOfHeaders.append((0,file.tell()-4096))
+
     elif binary[0]==255 and binary[1]==216 and binary[2]==255:#JPG
         StackOfHeaders.append((1,file.tell()-4096))
 
@@ -295,9 +297,9 @@ def HeaderSearch(binary):
 
     elif binary[0]==80 and binary[1]==75 and binary[2]==3 and binary[3]==4 and binary[4]==20:#ZIP
         StackOfHeaders.append((3,file.tell()-4096))
-       
+
     elif binary[0]==137 and binary[1]==80 and binary[2]==78 and binary[3]==71 and binary[4]==13 and binary[5]==10 and binary[6]==26 and binary[7]==10 :#PNG
-        StackOfHeaders.append((4,file.tell()-4096))        
+        StackOfHeaders.append((4,file.tell()-4096))
     else:
         for b in range(10):
             if (binary[b]>31 and binary[b]<127) or (binary[b]>6 and binary[b]<14):
@@ -325,7 +327,7 @@ def main():
             sys.stdout.write("\033[F")
 
         Chunk.counter+=1
-        
+
 
         binary=file.read(Chunk.Chunk)
         size=len(binary)
