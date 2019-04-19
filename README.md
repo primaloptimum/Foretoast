@@ -1,6 +1,6 @@
 #Foretoast
 
-files recovered [PNG,PDF,TXT,GIF,JPG,ZIP]
+files recoverable [PNG,PDF,TXT,GIF,JPG,ZIP]
 
 To install foretoast
 
